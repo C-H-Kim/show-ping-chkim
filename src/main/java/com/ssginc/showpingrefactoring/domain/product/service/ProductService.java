@@ -21,6 +21,8 @@ public interface ProductService {
 
     public GetProductListResponseDto getProducts(Long lastProductNo, int size);
 
+    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size);
+
     public List<ProductDto> getTopProductsBySaleQuantity(Long categoryNo);
 
     public List<ProductDto> getTopProductsBySale(Long categoryNo);

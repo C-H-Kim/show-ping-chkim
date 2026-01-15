@@ -1,5 +1,6 @@
 package com.ssginc.showpingrefactoring.domain.product.repository;
 
+import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemProjection;
 import com.ssginc.showpingrefactoring.domain.product.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,5 +48,32 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "WHERE p.productNo > :lastProductNo " +
             "ORDER BY p.productNo ASC")
     List<Product> findNext(@Param("lastProductNo") Long lastProductNo, Pageable pageable);
+
+    @Query(value = """
+        SELECT
+            product_no AS productNo,
+            product_name AS productName,
+            product_price AS productPrice,
+            product_img AS productImg
+        FROM product
+        WHERE product_name LIKE CONCAT('%', :keyword, '%')
+        ORDER BY product_no ASC
+        LIMIT :size
+    """, nativeQuery = true)
+    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
+
+    @Query(value = """
+        SELECT
+            product_no AS productNo,
+            product_name AS productName,
+            product_price AS productPrice,
+            product_img AS productImg
+        FROM product
+        WHERE product_no > :lastProductNo
+            AND product_name LIKE CONCAT('%', :keyword, '%')
+        ORDER BY product_no ASC
+        LIMIT :size
+    """, nativeQuery = true)
+    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
 
 }

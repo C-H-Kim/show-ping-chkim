@@ -2,6 +2,7 @@ package com.ssginc.showpingrefactoring.domain.product.service.implement;
 
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemDto;
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductDto;
+import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemProjection;
 import com.ssginc.showpingrefactoring.domain.product.dto.response.GetProductListResponseDto;
 import com.ssginc.showpingrefactoring.domain.product.entity.Product;
 import com.ssginc.showpingrefactoring.domain.product.repository.ProductRepository;
@@ -118,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
 //                .map(ProductItemDto::fromEntity);
 //    }
 
+    @Override
     public GetProductListResponseDto getProducts(Long lastProductNo, int size) {
         Pageable limit = PageRequest.of(0, size);
 
@@ -136,6 +138,31 @@ public class ProductServiceImpl implements ProductService {
         Long nextLastProductNo = data.isEmpty() ? null : data.get(data.size() - 1).getProductNo();
 
         // hasNext 여부 조회 건수가 설정한 size보다 작다면 다음 페이지가 없음
+        boolean hasNext = data.size() == size;
+
+        return new GetProductListResponseDto(data, hasNext, nextLastProductNo);
+    }
+
+    @Override
+    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size) {
+        List<ProductItemProjection> result;
+        if (lastProductNo == null) {
+            result = productRepository.searchInitial(keyword, size);
+        } else {
+            result = productRepository.searchNext(keyword, lastProductNo, size);
+        }
+
+        List<ProductItemDto> data = result.stream()
+                .map(p -> ProductItemDto.builder()
+                        .productNo(p.getProductNo())
+                        .productName(p.getProductName())
+                        .productPrice(p.getProductPrice())
+                        .productImg(p.getProductImg())
+                        .build())
+                .toList();
+
+        Long nextLastProductNo = data.isEmpty() ? null : data.get(data.size() - 1).getProductNo();
+
         boolean hasNext = data.size() == size;
 
         return new GetProductListResponseDto(data, hasNext, nextLastProductNo);

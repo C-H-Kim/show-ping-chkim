@@ -118,6 +118,16 @@ public class LiveApiController implements LiveApiSpecification {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    @GetMapping("/search-product")
+    public ResponseEntity<GetProductListResponseDto> getSearchProductList(
+            @RequestParam(required = true) String keyword,
+            @RequestParam(required = false) Long lastProductNo,
+            @RequestParam(defaultValue = "20") int size) {
+        GetProductListResponseDto result = productService.getSearchProducts(keyword, lastProductNo, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
     /**
      * 방송 등록을 하는 메서드
      * @param request 방송 등록에 필요한 방송 정보
