@@ -49,6 +49,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "ORDER BY p.productNo ASC")
     List<Product> findNext(@Param("lastProductNo") Long lastProductNo, Pageable pageable);
 
+//    // LIKE 방식
+//    @Query(value = """
+//        SELECT
+//            product_no AS productNo,
+//            product_name AS productName,
+//            product_price AS productPrice,
+//            product_img AS productImg
+//        FROM product
+//        WHERE product_name LIKE CONCAT('%', :keyword, '%')
+//        ORDER BY product_no ASC
+//        LIMIT :size
+//    """, nativeQuery = true)
+//    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
+
+    // FULLTEXT 방식 - boolean mode
     @Query(value = """
         SELECT
             product_no AS productNo,
@@ -56,12 +71,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             product_price AS productPrice,
             product_img AS productImg
         FROM product
-        WHERE product_name LIKE CONCAT('%', :keyword, '%')
+        WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
         ORDER BY product_no ASC
         LIMIT :size
     """, nativeQuery = true)
     List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
 
+//    // LIKE 방식
+//    @Query(value = """
+//        SELECT
+//            product_no AS productNo,
+//            product_name AS productName,
+//            product_price AS productPrice,
+//            product_img AS productImg
+//        FROM product
+//        WHERE product_no > :lastProductNo
+//            AND product_name LIKE CONCAT('%', :keyword, '%')
+//        ORDER BY product_no ASC
+//        LIMIT :size
+//    """, nativeQuery = true)
+//    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
+
+    // FULLTEXT 방식 - boolean mode
     @Query(value = """
         SELECT
             product_no AS productNo,
@@ -70,7 +101,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             product_img AS productImg
         FROM product
         WHERE product_no > :lastProductNo
-            AND product_name LIKE CONCAT('%', :keyword, '%')
+            AND MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
         ORDER BY product_no ASC
         LIMIT :size
     """, nativeQuery = true)
