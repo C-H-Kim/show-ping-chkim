@@ -3,7 +3,9 @@ package com.ssginc.showpingrefactoring.domain.product.service.implement;
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemDto;
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductDto;
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemProjection;
+import com.ssginc.showpingrefactoring.domain.product.dto.object.SearchProductItemDto;
 import com.ssginc.showpingrefactoring.domain.product.dto.response.GetProductListResponseDto;
+import com.ssginc.showpingrefactoring.domain.product.dto.response.GetSearchProductListResponseDto;
 import com.ssginc.showpingrefactoring.domain.product.entity.Product;
 import com.ssginc.showpingrefactoring.domain.product.repository.ProductRepository;
 import com.ssginc.showpingrefactoring.domain.product.service.ProductService;
@@ -144,28 +146,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size) {
+    public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, Double lastScore, int size) {
         List<ProductItemProjection> result;
-        if (lastProductNo == null) {
+        if (lastProductNo == null || lastScore == null) {
             result = productRepository.searchInitial(keyword, size);
         } else {
-            result = productRepository.searchNext(keyword, lastProductNo, size);
+            result = productRepository.searchNext(keyword, lastProductNo, lastScore, size);
         }
 
-        List<ProductItemDto> data = result.stream()
-                .map(p -> ProductItemDto.builder()
+        List<SearchProductItemDto> data = result.stream()
+                .map(p -> SearchProductItemDto.builder()
                         .productNo(p.getProductNo())
                         .productName(p.getProductName())
                         .productPrice(p.getProductPrice())
                         .productImg(p.getProductImg())
+                        .score(p.getScore())
                         .build())
                 .toList();
 
         Long nextLastProductNo = data.isEmpty() ? null : data.get(data.size() - 1).getProductNo();
+        Double nextLastScore = data.isEmpty() ? null : data.get(data.size() - 1).getScore();
 
         boolean hasNext = data.size() == size;
 
-        return new GetProductListResponseDto(data, hasNext, nextLastProductNo);
+        return new GetSearchProductListResponseDto(data, hasNext, nextLastProductNo, nextLastScore);
     }
 
     public List<ProductDto> getTopProductsBySaleQuantity(Long categoryNo) {

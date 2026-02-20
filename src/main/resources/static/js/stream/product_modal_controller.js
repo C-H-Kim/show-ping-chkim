@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loading: false,
         hasNext: true,
         lastProductNo: null,
+        lastScore: null,
         token: 0,
         loadingOwner: null, // "list" | "search"
     };
@@ -99,6 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
         state.loading = false;
         state.hasNext = true;
         state.lastProductNo = null;
+        state.lastScore = null;
         state.token += 1;
         clearList()
         hideLoading("list");
@@ -191,19 +193,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const response = await axios.get(SEARCH_API, {
-                params: {keyword, lastProductNo: state.lastProductNo, size: SIZE},
+                params: {
+                    keyword,
+                    lastProductNo: state.lastProductNo,
+                    lastScore: state.lastScore,
+                    size: SIZE},
                 withCredentials: true,
             });
 
             if (state.mode !== "search" || myToken !== state.token) return;
 
-            const {data, hasNext, nextLastProductNo} = response.data;
+            const {data, hasNext, nextLastProductNo, nextLastScore} = response.data;
 
             // 첫 페이지인데 검색 결과가 없는 경우
-            const isFirstPage = state.lastProductNo == null;
+            const isFirstPage = (state.lastProductNo == null || state.lastScore == null);
             if (isFirstPage && (!data || data.length === 0)) {
                 state.hasNext = false;
                 state.lastProductNo = null;
+                state.lastScore = null;
 
                 hideLoading("search");
                 hideLoading("list");
@@ -216,8 +223,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             renderProducts(data || []);
+
             state.hasNext = !!hasNext;
             state.lastProductNo = nextLastProductNo ?? null;
+            state.lastScore = nextLastScore ?? null;
 
             if (!state.hasNext) {
                 setEndMsg("마지막 상품입니다.");
@@ -227,7 +236,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("search failed: ", err);
         } finally {
             if (state.mode === "search" && myToken === state.token) {
-                console.log("loadMoreSearch finally 부분")
                 hideLoading("search");
                 state.loading = false;
             }

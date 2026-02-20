@@ -63,16 +63,33 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    """, nativeQuery = true)
 //    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
 
-    // FULLTEXT 방식 - boolean mode
+//    // FULLTEXT 방식 - boolean mode
+//    @Query(value = """
+//        SELECT
+//            product_no AS productNo,
+//            product_name AS productName,
+//            product_price AS productPrice,
+//            product_img AS productImg
+//        FROM product
+//        WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
+//        ORDER BY product_no ASC
+//        LIMIT :size
+//    """, nativeQuery = true)
+//    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
+
+    // FULLTEXT 방식 - natural language mode
     @Query(value = """
         SELECT
-            product_no AS productNo,
-            product_name AS productName,
-            product_price AS productPrice,
-            product_img AS productImg
-        FROM product
-        WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
-        ORDER BY product_no ASC
+            p.product_no AS productNo,
+            p.product_name AS productName,
+            p.product_price AS productPrice,
+            p.product_img AS productImg,
+            MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
+        FROM product p
+        WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+        ORDER BY
+            score DESC,
+            p.product_no ASC
         LIMIT :size
     """, nativeQuery = true)
     List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
@@ -92,19 +109,41 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    """, nativeQuery = true)
 //    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
 
-    // FULLTEXT 방식 - boolean mode
+//    // FULLTEXT 방식 - boolean mode
+//    @Query(value = """
+//        SELECT
+//            product_no AS productNo,
+//            product_name AS productName,
+//            product_price AS productPrice,
+//            product_img AS productImg
+//        FROM product
+//        WHERE product_no > :lastProductNo
+//            AND MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
+//        ORDER BY product_no ASC
+//        LIMIT :size
+//    """, nativeQuery = true)
+//    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
+
+    // FULLTEXT 방식 - natural mdoe
     @Query(value = """
-        SELECT
-            product_no AS productNo,
-            product_name AS productName,
-            product_price AS productPrice,
-            product_img AS productImg
-        FROM product
-        WHERE product_no > :lastProductNo
-            AND MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
-        ORDER BY product_no ASC
+        SELECT *
+        FROM (
+            SELECT
+                p.product_no AS productNo,
+                p.product_name AS productName,
+                p.product_price AS productPrice,
+                p.product_img AS productImg,
+                MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
+        FROM product p
+        WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+        ) t
+        WHERE (t.score < :lastScore)
+            OR (t.score = :lastScore AND t.productNo > :lastProductNo)
+        ORDER BY
+            t.score DESC,
+            t.productNo ASC
         LIMIT :size
     """, nativeQuery = true)
-    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
+    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("lastScore") Double lastScore, @Param("size") int size);
 
 }

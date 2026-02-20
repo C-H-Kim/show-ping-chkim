@@ -1,6 +1,7 @@
 package com.ssginc.showpingrefactoring.domain.product.service;
 
 import com.ssginc.showpingrefactoring.domain.product.dto.response.GetProductListResponseDto;
+import com.ssginc.showpingrefactoring.domain.product.dto.response.GetSearchProductListResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,7 +22,9 @@ public interface ProductService {
 
     public GetProductListResponseDto getProducts(Long lastProductNo, int size);
 
-    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size);
+//    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size);
+
+    public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, Double lastScore, int size);
 
     public List<ProductDto> getTopProductsBySaleQuantity(Long categoryNo);
 

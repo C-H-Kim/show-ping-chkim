@@ -10,4 +10,6 @@ public interface ProductItemProjection {
 
     String getProductImg();
 
+    Double getScore();
+
 }

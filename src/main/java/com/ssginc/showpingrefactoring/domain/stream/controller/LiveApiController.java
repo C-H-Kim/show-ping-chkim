@@ -1,6 +1,7 @@
 package com.ssginc.showpingrefactoring.domain.stream.controller;
 
 import com.ssginc.showpingrefactoring.domain.product.dto.response.GetProductListResponseDto;
+import com.ssginc.showpingrefactoring.domain.product.dto.response.GetSearchProductListResponseDto;
 import com.ssginc.showpingrefactoring.domain.product.service.ProductService;
 import com.ssginc.showpingrefactoring.domain.product.dto.object.ProductItemDto;
 import com.ssginc.showpingrefactoring.domain.stream.dto.request.RegisterLiveRequestDto;
@@ -119,11 +120,12 @@ public class LiveApiController implements LiveApiSpecification {
     }
 
     @GetMapping("/search-product")
-    public ResponseEntity<GetProductListResponseDto> getSearchProductList(
+    public ResponseEntity<GetSearchProductListResponseDto> getSearchProductList(
             @RequestParam(required = true) String keyword,
             @RequestParam(required = false) Long lastProductNo,
+            @RequestParam(required = false) Double lastScore,
             @RequestParam(defaultValue = "20") int size) {
-        GetProductListResponseDto result = productService.getSearchProducts(keyword, lastProductNo, size);
+        GetSearchProductListResponseDto result = productService.getSearchProducts(keyword, lastProductNo, lastScore, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
