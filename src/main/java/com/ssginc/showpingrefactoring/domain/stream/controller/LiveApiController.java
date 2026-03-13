@@ -125,6 +125,9 @@ public class LiveApiController implements LiveApiSpecification {
             @RequestParam(required = false) Long lastProductNo,
             @RequestParam(required = false) Double lastScore,
             @RequestParam(defaultValue = "20") int size) {
+        // LIKE 방식
+//        GetSearchProductListResponseDto result = productService.getSearchProducts(keyword, lastProductNo, size);
+        // FULLTEXT 방식
         GetSearchProductListResponseDto result = productService.getSearchProducts(keyword, lastProductNo, lastScore, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(result);

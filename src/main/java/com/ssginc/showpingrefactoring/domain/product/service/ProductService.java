@@ -22,8 +22,10 @@ public interface ProductService {
 
     public GetProductListResponseDto getProducts(Long lastProductNo, int size);
 
-//    public GetProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size);
+    // LIKE 방식 상품 검색
+    public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size);
 
+    // FULLTEXT 방식 상품 검색
     public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, Double lastScore, int size);
 
     public List<ProductDto> getTopProductsBySaleQuantity(Long categoryNo);

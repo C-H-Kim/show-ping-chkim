@@ -146,12 +146,38 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, int size) {
+        List<ProductItemProjection> result;
+        if (lastProductNo == null) {
+            result = productRepository.searchInitialLike(keyword, size);
+        } else {
+            result = productRepository.searchNextLike(keyword, lastProductNo, size);
+        }
+
+        List<SearchProductItemDto> data = result.stream()
+                .map(p -> SearchProductItemDto.builder()
+                        .productNo(p.getProductNo())
+                        .productName(p.getProductName())
+                        .productPrice(p.getProductPrice())
+                        .productImg(p.getProductImg())
+                        .score(null)
+                        .build())
+                .toList();
+
+        Long nextLastProductNo = data.isEmpty() ? null : data.get(data.size() - 1).getProductNo();
+
+        boolean hasNext = data.size() == size;
+
+        return new GetSearchProductListResponseDto(data, hasNext, nextLastProductNo, null);
+    }
+
+    @Override
     public GetSearchProductListResponseDto getSearchProducts(String keyword, Long lastProductNo, Double lastScore, int size) {
         List<ProductItemProjection> result;
         if (lastProductNo == null || lastScore == null) {
-            result = productRepository.searchInitial(keyword, size);
+            result = productRepository.searchInitialFt(keyword, size);
         } else {
-            result = productRepository.searchNext(keyword, lastProductNo, lastScore, size);
+            result = productRepository.searchNextFt(keyword, lastProductNo, lastScore, size);
         }
 
         List<SearchProductItemDto> data = result.stream()

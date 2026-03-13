@@ -49,82 +49,70 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "ORDER BY p.productNo ASC")
     List<Product> findNext(@Param("lastProductNo") Long lastProductNo, Pageable pageable);
 
-//    // LIKE 방식
-//    @Query(value = """
-//        SELECT
-//            product_no AS productNo,
-//            product_name AS productName,
-//            product_price AS productPrice,
-//            product_img AS productImg
-//        FROM product
-//        WHERE product_name LIKE CONCAT('%', :keyword, '%')
-//        ORDER BY product_no ASC
-//        LIMIT :size
-//    """, nativeQuery = true)
-//    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
-
-//    // FULLTEXT 방식 - boolean mode
-//    @Query(value = """
-//        SELECT
-//            product_no AS productNo,
-//            product_name AS productName,
-//            product_price AS productPrice,
-//            product_img AS productImg
-//        FROM product
-//        WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
-//        ORDER BY product_no ASC
-//        LIMIT :size
-//    """, nativeQuery = true)
-//    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
-
-    // FULLTEXT 방식 - natural language mode
+    // LIKE 방식
     @Query(value = """
         SELECT
-            p.product_no AS productNo,
-            p.product_name AS productName,
-            p.product_price AS productPrice,
-            p.product_img AS productImg,
-            MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
-        FROM product p
-        WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
-        ORDER BY
-            score DESC,
-            p.product_no ASC
+            product_no AS productNo,
+            product_name AS productName,
+            product_price AS productPrice,
+            product_img AS productImg
+        FROM product
+        WHERE product_name LIKE CONCAT('%', :keyword, '%')
+        ORDER BY product_no ASC
         LIMIT :size
     """, nativeQuery = true)
-    List<ProductItemProjection> searchInitial(@Param("keyword") String keyword, @Param("size") int size);
+    List<ProductItemProjection> searchInitialLike(@Param("keyword") String keyword, @Param("size") int size);
 
-//    // LIKE 방식
+    // FULLTEXT 방식 - boolean mode
+    @Query(value = """
+        SELECT
+            product_no AS productNo,
+            product_name AS productName,
+            product_price AS productPrice,
+            product_img AS productImg,
+            MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE) AS score
+        FROM product
+        WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
+        ORDER BY
+            score DESC,
+            product_no ASC
+        LIMIT :size
+    """, nativeQuery = true)
+    List<ProductItemProjection> searchInitialFt(@Param("keyword") String keyword, @Param("size") int size);
+
+//    // FULLTEXT 방식 - natural language mode
 //    @Query(value = """
 //        SELECT
 //            product_no AS productNo,
 //            product_name AS productName,
 //            product_price AS productPrice,
-//            product_img AS productImg
+//            product_img AS productImg,
+//            MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
 //        FROM product
-//        WHERE product_no > :lastProductNo
-//            AND product_name LIKE CONCAT('%', :keyword, '%')
-//        ORDER BY product_no ASC
+//        WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+//        ORDER BY
+//            score DESC,
+//            product_no ASC
 //        LIMIT :size
 //    """, nativeQuery = true)
-//    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
+//    List<ProductItemProjection> searchInitialFt(@Param("keyword") String keyword, @Param("size") int size);
 
-//    // FULLTEXT 방식 - boolean mode
-//    @Query(value = """
-//        SELECT
-//            product_no AS productNo,
-//            product_name AS productName,
-//            product_price AS productPrice,
-//            product_img AS productImg
-//        FROM product
-//        WHERE product_no > :lastProductNo
-//            AND MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
-//        ORDER BY product_no ASC
-//        LIMIT :size
-//    """, nativeQuery = true)
-//    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
+    // LIKE 방식
+    @Query(value = """
+        SELECT
+            product_no AS productNo,
+            product_name AS productName,
+            product_price AS productPrice,
+            product_img AS productImg
+        FROM product
+        WHERE product_no > :lastProductNo
+            AND product_name LIKE CONCAT('%', :keyword, '%')
+        ORDER BY product_no ASC
+        LIMIT :size
+    """, nativeQuery = true)
+    List<ProductItemProjection> searchNextLike(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("size") int size);
 
-    // FULLTEXT 방식 - natural mdoe
+    // FULLTEXT 방식 - boolean mode
     @Query(value = """
         SELECT *
         FROM (
@@ -133,9 +121,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 p.product_name AS productName,
                 p.product_price AS productPrice,
                 p.product_img AS productImg,
-                MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
-        FROM product p
-        WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+                MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE) AS score
+            FROM product p
+            WHERE MATCH(product_name) AGAINST (:keyword IN BOOLEAN MODE)
         ) t
         WHERE (t.score < :lastScore)
             OR (t.score = :lastScore AND t.productNo > :lastProductNo)
@@ -144,6 +132,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             t.productNo ASC
         LIMIT :size
     """, nativeQuery = true)
-    List<ProductItemProjection> searchNext(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("lastScore") Double lastScore, @Param("size") int size);
+    List<ProductItemProjection> searchNextFt(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("lastScore") Double lastScore, @Param("size") int size);
+
+//    // FULLTEXT 방식 - natural mdoe
+//    @Query(value = """
+//        SELECT *
+//        FROM (
+//            SELECT
+//                p.product_no AS productNo,
+//                p.product_name AS productName,
+//                p.product_price AS productPrice,
+//                p.product_img AS productImg,
+//                MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE) AS score
+//            FROM product p
+//            WHERE MATCH(product_name) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+//        ) t
+//        WHERE (t.score < :lastScore)
+//            OR (t.score = :lastScore AND t.productNo > :lastProductNo)
+//        ORDER BY
+//            t.score DESC,
+//            t.productNo ASC
+//        LIMIT :size
+//    """, nativeQuery = true)
+//    List<ProductItemProjection> searchNextFt(@Param("keyword") String keyword, @Param("lastProductNo") Long lastProductNo, @Param("lastScore") Double lastScore, @Param("size") int size);
 
 }
