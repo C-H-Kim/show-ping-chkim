@@ -63,7 +63,7 @@
     padding: 4px 8px;
     background-color: #f9f9f9;
 }
-.search-bar input[type="text"] {
+.search-bar input[type="search"] {
     flex: 1;
     border: none;
     outline: none;
